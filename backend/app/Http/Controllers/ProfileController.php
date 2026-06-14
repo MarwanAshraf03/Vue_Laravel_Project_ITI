@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends Controller
 {
@@ -63,5 +64,27 @@ class ProfileController extends Controller
             'message' => 'Profile created successfully',
             'user' => $user
         ], 201);
+    }
+
+    public function login(Request $request){
+            $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
+
+    if (! Auth::attempt($credentials)) {
+        return response()->json([
+            'message' => 'Invalid credentials'
+        ], 401);
+    }
+
+    $user = Auth::user();
+
+    $token = $user->createToken('mobile-app')->plainTextToken;
+
+    return response()->json([
+        'token' => $token,
+        'user' => $user
+    ]);
     }
 }
