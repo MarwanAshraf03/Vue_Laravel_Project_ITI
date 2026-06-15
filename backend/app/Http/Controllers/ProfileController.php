@@ -3,12 +3,26 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Candidate;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
 class ProfileController extends Controller
 {
+    private function mergedUserPayload(User $user): array
+    {
+        $profile = match ($user->role) {
+            'candidate' => Candidate::where('user_id', $user->id)->first(),
+            default => $user->loadMissing('profile')->profile,
+        };
+
+        return array_merge($user->toArray(), $profile?->toArray() ?? []);
+    }
+
     public function candidateSignUp(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -145,7 +159,82 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         return response()->json([
-            'user' => array_merge($user->toArray(), $user->profile->toArray())
+            'user' => $this->mergedUserPayload($user)
+        ]);
+    }
+
+    public function updateCandidateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'candidate') {
+            return response()->json([
+                'message' => 'Unauthorized action'
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'password' => 'nullable|string|min:6',
+            'job_title' => 'required|string|max:255',
+            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png,webp,gif|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors(),
+                'message' => 'Profile update failed'
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        if ($request->hasFile('profile_picture')) {
+            if ($user->profile_picture) {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+
+            $user->profile_picture = $request->file('profile_picture')->store('profile_pictures', 'public');
+        }
+
+        $user->save();
+        Candidate::updateOrCreate(
+            ['user_id' => $user->id],
+            ['job_title' => $validated['job_title']]
+        );
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => $this->mergedUserPayload($user->fresh())
+        ]);
+    }
+
+    public function deleteCandidateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'candidate') {
+            return response()->json([
+                'message' => 'Unauthorized action'
+            ], 403);
+        }
+
+        if ($user->profile_picture) {
+            Storage::disk('public')->delete($user->profile_picture);
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'message' => 'Profile deleted successfully'
         ]);
     }
 }
