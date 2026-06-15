@@ -1,6 +1,10 @@
 <script setup>
-import { defineProps } from 'vue'
+import { defineProps, ref } from 'vue'
 import { signUpUser } from '@/services/userService'
+import { useRouter } from 'vue-router'
+const error = ref(null)
+const loading = ref(false)
+const router = useRouter()
 
 const props = defineProps({
   role: String,
@@ -20,6 +24,8 @@ function togglePassword() {
 
 async function submitForm(e) {
   e.preventDefault()
+  loading.value = true
+  error.value = null
   let email = document.getElementById('email').value
   let password = document.getElementById('password').value
   let name = document.getElementById('name').value
@@ -27,18 +33,6 @@ async function submitForm(e) {
   if (props.role === 'candidate') {
     job = document.getElementById('job').value
   }
-  // const response = await fetch('http://localhost:8000/api/' + props.role + '/signup', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify({
-  //     email,
-  //     password,
-  //     name,
-  //     job_title: job,
-  //   }),
-  // })
 
   const data = await signUpUser(props.role, {
     email,
@@ -46,8 +40,13 @@ async function submitForm(e) {
     name,
     job_title: job,
   })
-
-  console.log(data)
+  loading.value = false
+  if (!data.ok) {
+    document.getElementById('error').scrollIntoView({ behavior: 'smooth' })
+    error.value = data.message
+  } else {
+    router.push(`/user/login`)
+  }
 }
 </script>
 <template>
@@ -62,6 +61,11 @@ async function submitForm(e) {
       </div>
     </div>
   </nav>
+  <div id="error">
+    <div v-if="error" class="alert alert-danger m-auto w-50 mt-3">
+      {{ error }}
+    </div>
+  </div>
 
   <div class="container py-5">
     <div class="row g-5 align-items-center">
@@ -129,8 +133,11 @@ async function submitForm(e) {
             </button>
           </div>
 
-          <button type="submit" class="signup-btn w-100" @click="submitForm">
+          <button v-if="!loading" type="submit" class="signup-btn w-100" @click="submitForm">
             Create {{ role === 'candidate' ? 'Candidate' : 'Admin' }} Account
+          </button>
+          <button v-else class="signup-btn w-100" disabled>
+            <span class="spinner-border spinner-border-sm"></span> Creating Account...
           </button>
         </form>
       </div>
@@ -139,7 +146,7 @@ async function submitForm(e) {
         <div class="benefits-wrapper">
           <div class="row g-3">
             <div class="col-12">
-              <div class="benefit-card">
+              <div class="benefit-card mb-4">
                 <div class="icon-box bg-success-subtle mb-3">
                   <span class="material-symbols-outlined"> notifications_active </span>
                 </div>
@@ -181,7 +188,7 @@ async function submitForm(e) {
               </div>
             </div>
 
-            <div class="col-12">
+            <div class="col-12 mt-4">
               <div class="testimonial">
                 <img
                   src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1200"
