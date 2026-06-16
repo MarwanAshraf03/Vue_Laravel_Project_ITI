@@ -25,9 +25,8 @@ export async function getCurrentUser() {
     return null
   }
   const result = await callApi('/user', 'GET', null, token)
-  console.log(result)
   if (result.ok) {
     currentUser = result.data.user
   }
-  // return result
+  return currentUser
 }

@@ -25,7 +25,7 @@
                 <div class="col-md-6">
                   <label class="form-label">Company Name</label>
                   <input
-                    v-model="form.companyName"
+                    v-model="form.name"
                     type="text"
                     class="form-control"
                     placeholder="e.g. Acme Corp"
@@ -54,7 +54,7 @@
                 <div class="col-12">
                   <label class="form-label">Phone Number</label>
                   <input
-                    v-model="form.phoneNumber"
+                    v-model="form.phone"
                     type="text"
                     class="form-control"
                     placeholder="01111111111"
@@ -178,17 +178,27 @@
 
 <script setup>
 import { reactive } from 'vue'
+import router from '@/router'
+import { signUpUser } from '@/services/userService'
 
 const form = reactive({
-  companyName: '',
+  name: '',
   email: '',
   password: '',
   description: '',
-  phoneNumber: '',
+  phone: '',
 })
 
 const submit = () => {
-  console.log(form)
+  signUpUser('employer', form)
+    .then((response) => {
+      if (response.ok) {
+        router.push('/')
+      }
+    })
+    .catch((error) => {
+      console.log(error)
+    })
 }
 </script>
 
