@@ -12,6 +12,7 @@ export async function callApi(url, method, data, token = null) {
       body: data ? (isFormData ? data : JSON.stringify(data)) : null,
     })
     const responseData = await response.json()
+    console.log(responseData)
     if (response.ok) {
       return { data: responseData, ok: true }
     } else {
