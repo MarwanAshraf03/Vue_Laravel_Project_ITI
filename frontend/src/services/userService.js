@@ -30,3 +30,36 @@ export async function getCurrentUser() {
   }
   return currentUser
 }
+
+export async function updateCandidateProfile(profileData) {
+  const token = Cookies.get('token')
+  const payload = new FormData()
+
+  payload.append('_method', 'PUT')
+  payload.append('name', profileData.name)
+  payload.append('email', profileData.email)
+  payload.append('job_title', profileData.job_title)
+
+  if (profileData.password) {
+    payload.append('password', profileData.password)
+  }
+
+  if (profileData.profile_picture_file) {
+    payload.append('profile_picture', profileData.profile_picture_file)
+  }
+
+  const result = await callApi('/candidate/profile', 'POST', payload, token)
+  if (result.ok) {
+    currentUser = result.data.user
+  }
+  return result
+}
+
+export async function deleteCandidateProfile() {
+  const token = Cookies.get('token')
+  const result = await callApi('/candidate/profile', 'DELETE', null, token)
+  if (result.ok) {
+    currentUser = null
+  }
+  return result
+}

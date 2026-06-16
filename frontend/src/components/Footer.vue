@@ -1,7 +1,7 @@
 <script setup></script>
 
 <template>
-  <footer class="border-top bg-light mt-5 py-4">
+  <footer class="border-top bg-light py-4">
     <div
       class="d-flex flex-column flex-md-row justify-content-between align-items-center container gap-3"
     >
