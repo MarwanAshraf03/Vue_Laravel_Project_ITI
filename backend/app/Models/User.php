@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 #[Fillable(['name', 'email', 'password','role','profile_picture'])]
 #[Hidden(['password', 'remember_token'])]
@@ -27,6 +28,11 @@ class User extends Authenticatable
         }else{
             return $this->hasOne(Admin::class);
         }
+    }
+
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
     }
 
 

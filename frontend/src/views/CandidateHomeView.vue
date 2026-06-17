@@ -1,19 +1,60 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import Cookies from 'js-cookie'
 import { getCurrentUser } from '@/services/userService'
+import { fetchJobs } from '@/services/jobsService'
+import JobCard from '@/components/JobCard.vue'
+import Filters from '@/components/Filters.vue'
+import ApplyModal from '@/components/ApplyModal.vue'
 
 const router = useRouter()
 const currentUser = ref(null)
+const jobs = ref([])
+const loading = ref(false)
+const filters = ref({
+  search: '',
+  category: '',
+  location: '',
+  industry: '',
+  experience: '',
+  posted: '',
+  min_salary: '',
+  max_salary: '',
+})
+const selectedJob = ref(null)
+const isModalOpen = ref(false)
 
 onMounted(async () => {
   currentUser.value = await getCurrentUser()
+  await loadJobs()
 })
+
+async function loadJobs() {
+  loading.value = true
+  const result = await fetchJobs(filters.value)
+  if (result.ok) {
+    jobs.value = result.data
+  }
+  loading.value = false
+}
+
+watch(
+  filters,
+  () => {
+    loadJobs()
+  },
+  { deep: true },
+)
 
 function logout() {
   Cookies.remove('token')
   router.push({ name: 'user_login' })
+}
+
+function openApplyModal(job) {
+  selectedJob.value = job
+  isModalOpen.value = true
 }
 </script>
 
@@ -31,29 +72,28 @@ function logout() {
       </div>
     </nav>
 
-    <section class="hero-card">
-      <p class="eyebrow">Welcome{{ currentUser ? `, ${currentUser.name}` : '' }}</p>
-      <h1>Your candidate dashboard is ready.</h1>
-      <p>
-        Keep your profile current, update your headline, and manage your account from the profile
-        page.
-      </p>
+    <div class="content-wrapper">
+      <Filters v-model:filters="filters" />
 
-      <div class="quick-grid" v-if="currentUser">
-        <article>
-          <span>Name</span>
-          <strong>{{ currentUser.name }}</strong>
-        </article>
-        <article>
-          <span>Email</span>
-          <strong>{{ currentUser.email }}</strong>
-        </article>
-        <article>
-          <span>Headline</span>
-          <strong>{{ currentUser.job_title || 'No headline set yet' }}</strong>
-        </article>
+      <div class="jobs-section">
+        <h2>Available Jobs</h2>
+
+        <div v-if="loading" class="loading-state">Loading jobs...</div>
+        <div v-else-if="jobs.length === 0" class="empty-state">
+          No jobs found matching your filters.
+        </div>
+        <div v-else class="jobs-grid">
+          <JobCard v-for="job in jobs" :key="job.id" :job="job" @apply="openApplyModal(job)" />
+        </div>
       </div>
-    </section>
+    </div>
+
+    <ApplyModal
+      v-if="selectedJob"
+      :job="selectedJob"
+      :is-open="isModalOpen"
+      @close="isModalOpen = false"
+    />
   </main>
 </template>
 
@@ -69,8 +109,8 @@ function logout() {
 }
 
 .candidate-nav,
-.hero-card {
-  max-width: 1120px;
+.content-wrapper {
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -121,58 +161,43 @@ function logout() {
   border: none;
   background: #0b1c30;
   color: #fff;
+  cursor: pointer;
 }
 
-.hero-card {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(11, 28, 48, 0.08);
-  border-radius: 28px;
-  padding: 2rem;
-  box-shadow: 0 24px 60px rgba(11, 28, 48, 0.08);
-}
-
-.eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 0.75rem;
-  color: #006a61;
-  margin-bottom: 0.5rem;
-  font-weight: 800;
-}
-
-.hero-card h1 {
-  margin: 0;
-  font-size: clamp(2rem, 4vw, 3.4rem);
-}
-
-.hero-card p {
-  max-width: 60ch;
-  color: #5f6b7c;
-}
-
-.quick-grid {
+.content-wrapper {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-  margin-top: 1.5rem;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  align-items: start;
 }
 
-.quick-grid article {
-  background: #f8fbff;
-  border: 1px solid rgba(11, 28, 48, 0.08);
-  border-radius: 18px;
-  padding: 1rem;
+.jobs-section {
+  width: 100%;
 }
 
-.quick-grid span {
-  display: block;
+.jobs-section h2 {
+  margin-top: 0;
+  color: #0b1c30;
+}
+
+.jobs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 3rem;
   color: #5f6b7c;
-  font-size: 0.85rem;
-  margin-bottom: 0.35rem;
+  font-size: 1.1rem;
 }
 
-.quick-grid strong {
-  word-break: break-word;
+@media (max-width: 900px) {
+  .content-wrapper {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 720px) {

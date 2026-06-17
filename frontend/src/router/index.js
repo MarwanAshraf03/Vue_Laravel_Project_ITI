@@ -5,6 +5,7 @@ import EmployerSignUpView from '@/views/EmployerSignUpView.vue'
 import LoginView from '@/views/LoginView.vue'
 import CandidateHomeView from '@/views/CandidateHomeView.vue'
 import CandidateProfileView from '@/views/CandidateProfileView.vue'
+import JobDetailsView from '@/views/JobDetailsView.vue'
 import HomeView from '@/views/HomeView.vue'
 import Cookies from 'js-cookie'
 import { getCurrentUser } from '@/services/userService'
@@ -24,6 +25,12 @@ const router = createRouter({
       component: CandidateHomeView,
       meta: { auth: true, role: 'candidate' },
       alias: ['/candidate', '/candidate/'],
+    },
+    {
+      path: '/candidate/jobs/:id',
+      name: 'job_details',
+      component: JobDetailsView,
+      meta: { auth: true, role: 'candidate' },
     },
     {
       path: '/candidate/profile',
