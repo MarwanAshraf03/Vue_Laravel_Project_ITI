@@ -34,7 +34,7 @@ async function loadJobs() {
   loading.value = true
   const result = await fetchJobs(filters.value)
   if (result.ok) {
-    jobs.value = result.data
+    jobs.value = Array.isArray(result.data) ? result.data : []
   }
   loading.value = false
 }

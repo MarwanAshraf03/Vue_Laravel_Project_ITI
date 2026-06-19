@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Employer;
 use App\Models\JobListing;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +14,23 @@ class JobListingSeeder extends Seeder
 
     public function run(): void
     {
+        $employerUser = User::firstOrCreate(
+            ['email' => 'employer@example.com'],
+            [
+                'name' => 'Seed Employer',
+                'password' => 'password',
+                'role' => 'employer',
+            ]
+        );
+
+        Employer::firstOrCreate(
+            ['user_id' => $employerUser->id],
+            [
+                'description' => 'Seed employer profile',
+                'phone' => '01000000000',
+            ]
+        );
+
         $jobs = [
             [
                 'title' => 'Frontend Developer',
@@ -20,6 +39,8 @@ class JobListingSeeder extends Seeder
                 'industry' => 'software',
                 'location' => 'cairo',
                 'company' => 'Tech Solutions Inc.',
+                'status' => 'published',
+                'deadline' => now()->addDays(30),
                 'salary_min' => 8000,
                 'salary_max' => 15000,
                 'experience_level' => 'junior'
@@ -31,6 +52,8 @@ class JobListingSeeder extends Seeder
                 'industry' => 'software',
                 'location' => 'giza',
                 'company' => 'Digital Innovations',
+                'status' => 'published',
+                'deadline' => now()->addDays(35),
                 'salary_min' => 15000,
                 'salary_max' => 25000,
                 'experience_level' => 'senior'
@@ -42,6 +65,8 @@ class JobListingSeeder extends Seeder
                 'industry' => 'creative',
                 'location' => 'alexandria',
                 'company' => 'Creative Minds',
+                'status' => 'published',
+                'deadline' => now()->addDays(40),
                 'salary_min' => 6000,
                 'salary_max' => 12000,
                 'experience_level' => 'mid'
@@ -53,6 +78,8 @@ class JobListingSeeder extends Seeder
                 'industry' => 'retail',
                 'location' => 'cairo',
                 'company' => 'Retail Hub',
+                'status' => 'published',
+                'deadline' => now()->addDays(28),
                 'salary_min' => 5000,
                 'salary_max' => 10000,
                 'experience_level' => 'junior'
@@ -64,6 +91,8 @@ class JobListingSeeder extends Seeder
                 'industry' => 'fintech',
                 'location' => 'cairo',
                 'company' => 'FinTech Solutions',
+                'status' => 'published',
+                'deadline' => now()->addDays(45),
                 'salary_min' => 12000,
                 'salary_max' => 20000,
                 'experience_level' => 'mid'
@@ -75,6 +104,8 @@ class JobListingSeeder extends Seeder
                 'industry' => 'finance',
                 'location' => 'giza',
                 'company' => 'Finance Corp',
+                'status' => 'published',
+                'deadline' => now()->addDays(32),
                 'salary_min' => 7000,
                 'salary_max' => 13000,
                 'experience_level' => 'junior'
@@ -86,6 +117,8 @@ class JobListingSeeder extends Seeder
                 'industry' => 'software',
                 'location' => 'cairo',
                 'company' => 'Cloud Services',
+                'status' => 'published',
+                'deadline' => now()->addDays(50),
                 'salary_min' => 14000,
                 'salary_max' => 22000,
                 'experience_level' => 'senior'
@@ -97,6 +130,8 @@ class JobListingSeeder extends Seeder
                 'industry' => 'tech',
                 'location' => 'alexandria',
                 'company' => 'Startup Hub',
+                'status' => 'published',
+                'deadline' => now()->addDays(60),
                 'salary_min' => 10000,
                 'salary_max' => 18000,
                 'experience_level' => 'mid'
@@ -104,7 +139,10 @@ class JobListingSeeder extends Seeder
         ];
 
         foreach ($jobs as $job) {
-            JobListing::create($job);
+            JobListing::updateOrCreate(
+                ['title' => $job['title'], 'employer_id' => $employerUser->id],
+                array_merge($job, ['employer_id' => $employerUser->id])
+            );
         }
     }
 }

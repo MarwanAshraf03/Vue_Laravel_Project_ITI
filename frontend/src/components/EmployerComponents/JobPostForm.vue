@@ -338,11 +338,7 @@ body {
   font-weight: 600;
 }
 
-/* Main Content Wrapper */
-.main-content {
-  margin-left: 260px;
-  min-height: 100vh;
-}
+
 
 /* Top Navbar */
 .top-navbar {
