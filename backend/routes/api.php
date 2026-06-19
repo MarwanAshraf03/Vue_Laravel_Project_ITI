@@ -23,4 +23,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('jobs/{jobListing}/apply', [ApplicationController::class, 'store']);
     Route::post('jobs/create', [JobController::class, 'new']);
     Route::patch('jobs/update/{jobListing}', [JobController::class, 'update']);
+    Route::delete('jobs/{jobListing}', [JobController::class, 'destroy']);
+
+    Route::get('employer/jobs', [JobController::class, 'employerIndex']);
+    Route::get('employer/jobs-summary', [JobController::class, 'employerJobsSummary']);
+    Route::get('employer/jobs/{jobListing}/applications', [JobController::class, 'employerApplications']);
+
+    Route::get('employer/applications', [ApplicationController::class, 'employerApplications']);
+    Route::patch('employer/applications/{application}/approve', [ApplicationController::class, 'approve']);
+    Route::patch('employer/applications/{application}/reject', [ApplicationController::class, 'reject']);
+    Route::post('employer/applications/{application}/pay', [ApplicationController::class, 'pay']);
 });

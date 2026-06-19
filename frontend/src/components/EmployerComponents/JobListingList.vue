@@ -1,11 +1,11 @@
 <script setup>
-import { fetchJobs } from '@/services/jobsService'
+import { deleteJobListing, fetchEmployerJobs } from '@/services/jobsService'
 import { nextTick, ref, Suspense } from 'vue'
 
 const tab = defineModel('tab')
 const jobId = defineModel('jobId')
-const response = await fetchJobs()
-const jobs = ref(response.data ? response.data : response)
+const response = await fetchEmployerJobs()
+const jobs = ref(Array.isArray(response.data) ? response.data : [])
 
 function capitalizeWords(str) {
   if (!str) return ''
@@ -26,10 +26,18 @@ async function handleEditJob(id) {
   // This will now print perfectly: { jobId: 4, tab: 'update_job' }
   console.log({ jobId: jobId.value, tab: tab.value })
 }
+
+async function handleDeleteJob(id) {
+  const response = await deleteJobListing(id)
+
+  if (response.ok) {
+    jobs.value = jobs.value.filter((job) => job.id !== id)
+  }
+}
 </script>
 
 <template>
-  <div class="d-flex">
+  <div class="d-flex h-full">
     <!-- Main Content Canvas -->
     <main class="main-content flex-grow-1">
       <!-- TopAppBar Component -->
@@ -130,7 +138,7 @@ async function handleEditJob(id) {
                 <tr
                   v-for="job in jobs"
                   :key="job.id"
-                  :style="{ opacity: new Date(job.deadline) < new Date() ? '0.75' : '1' }"
+                  :style="{ opacity: job.status === 'archived' ? '0.65' : '1' }"
                 >
                   <!-- <td class="px-4 py-3">
                     {{ JSON.stringify(job) }}
@@ -149,7 +157,7 @@ async function handleEditJob(id) {
                   </td>
                   <td class="px-4 py-3 fw-bold">0</td>
                   <td class="px-4 py-3 fw-bold">
-                    {{ new Date(job.deadline) < new Date() ? 'In Active' : 'Active' }}
+                    {{ capitalizeWords(job.status || 'published') }}
                   </td>
                   <td class="px-4 py-3 text-end">
                     <div class="d-flex justify-content-end gap-2">
@@ -160,7 +168,11 @@ async function handleEditJob(id) {
                       >
                         <i class="fa-solid fa-pen-to-square"></i>
                       </button>
-                      <button class="btn-table-action btn-table-delete" title="Delete">
+                      <button
+                        class="btn-table-action btn-table-delete"
+                        title="Delete"
+                        v-on:click="() => handleDeleteJob(job.id)"
+                      >
                         <i class="fa-solid fa-trash-can"></i>
                       </button>
                     </div>
@@ -297,7 +309,6 @@ body {
 
 /* Main Content Wrapper */
 .main-content {
-  margin-left: 260px;
   min-height: 100vh;
 }
 

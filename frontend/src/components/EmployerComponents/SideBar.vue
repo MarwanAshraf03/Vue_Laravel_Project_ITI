@@ -51,7 +51,12 @@ const tab = defineModel('tab')
         <i class="fa-solid fa-square-plus"></i>
         <span>Post a Job</span>
       </a>
-      <a class="nav-link-custom" href="#" v-on:click.prevent="">
+      <a
+        class="nav-link-custom"
+        :class="{ active: tab === 'applications' }"
+        href="#"
+        v-on:click.prevent="tab = 'applications'"
+      >
         <i class="fa-solid fa-users"></i>
         <span>Applications</span>
       </a>
@@ -84,9 +89,7 @@ body {
 .sidebar {
   width: 260px;
   height: 100vh;
-  position: fixed;
-  left: 0;
-  top: 0;
+
   background-color: #ffffff;
   border-right: 1px solid #c6c6cd;
   z-index: 1030;
@@ -118,7 +121,6 @@ body {
 /* Main Content Wrapper */
 .main-content {
   margin-left: 260px;
-  min-height: 100vh;
 }
 
 /* Top Navbar */

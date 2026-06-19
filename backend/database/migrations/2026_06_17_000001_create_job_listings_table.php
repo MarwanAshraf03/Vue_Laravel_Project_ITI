@@ -14,13 +14,15 @@ return new class extends Migration {
             $table->string('category');
             $table->string('industry');
             $table->string('location');
-            // $table->string('company');
-            $table->foreignId('employer_id')->constrained('employers', 'user_id')->cascadeOnDelete();
+            $table->string('company')->nullable();
+            $table->enum('status', ['draft', 'published', 'archived'])->default('published');
+            $table->foreignId('employer_id')->constrained('users')->cascadeOnDelete();
             $table->unsignedInteger('salary_min');
             $table->unsignedInteger('salary_max');
             $table->string('experience_level');
             $table->dateTime('deadline');
             $table->timestamps();
+            $table->softDeletes();
             $table->unique(['title', 'employer_id']);
         });
     }

@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import JobPostForm from './JobPostForm.vue'
+import { newJobListing } from '@/services/jobsService'
 
 const tab = defineModel('tab')
 const job = ref({
@@ -29,10 +30,11 @@ const formatToDMY = (dateValue) => {
 
 const handleSubmit = async function () {
   job.value.deadline = formatToDMY(job.value.deadline)
-  //   console.log({ job: job.value })
-  const response = await updateJobListing(job.value)
-  //   console.log(response.data)
-  tab.value = 'dashboard'
+  const response = await newJobListing(job.value)
+
+  if (response.ok) {
+    tab.value = 'dashboard'
+  }
 }
 </script>
 <template>

@@ -1,4 +1,5 @@
 <script setup>
+import ApplicationList from '@/components/EmployerComponents/ApplicationList.vue'
 import JobListingList from '@/components/EmployerComponents/JobListingList.vue'
 import NewJob from '@/components/EmployerComponents/NewJob.vue'
 import SideBar from '@/components/EmployerComponents/SideBar.vue'
@@ -42,6 +43,21 @@ const tab = ref('dashboard')
               <span class="visually-hidden">Loading listings...</span>
             </div>
             <p class="text-muted mt-2 small">Loading active job listings...</p>
+          </div>
+        </template>
+      </Suspense>
+
+      <Suspense v-else-if="tab === 'applications'">
+        <template #default>
+          <ApplicationList />
+        </template>
+
+        <template #fallback>
+          <div class="container-fluid py-5 text-center">
+            <div class="spinner-border text-success" role="status">
+              <span class="visually-hidden">Loading applications...</span>
+            </div>
+            <p class="text-muted mt-2 small">Loading candidate applications...</p>
           </div>
         </template>
       </Suspense>
