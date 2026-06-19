@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('job_listings', function (Blueprint $table) {
@@ -15,11 +14,14 @@ return new class extends Migration
             $table->string('category');
             $table->string('industry');
             $table->string('location');
-            $table->string('company');
+            // $table->string('company');
+            $table->foreignId('employer_id')->constrained('employers', 'user_id')->cascadeOnDelete();
             $table->unsignedInteger('salary_min');
             $table->unsignedInteger('salary_max');
             $table->string('experience_level');
+            $table->dateTime('deadline');
             $table->timestamps();
+            $table->unique(['title', 'employer_id']);
         });
     }
 

@@ -25,7 +25,11 @@ async function handleLogin() {
   loading.value = false
   if (result.ok) {
     Cookies.set('token', result.data.token)
-    router.push(result.data.user.role === 'candidate' ? { name: 'candidate_home' } : { name: 'home' })
+    router.push(
+      ['candidate', 'employer'].includes(result.data.user.role)
+        ? { name: `${result.data.user.role}_home` }
+        : { name: 'home' },
+    )
   } else {
     error.value = result.message
   }
@@ -85,12 +89,7 @@ function togglePassword() {
                 placeholder="••••••••"
                 required
               />
-              <button
-                type="button"
-                class="password-toggle"
-                @click="togglePassword"
-                tabindex="-1"
-              >
+              <button type="button" class="password-toggle" @click="togglePassword" tabindex="-1">
                 <span class="material-symbols-outlined">
                   {{ passwordFieldType === 'password' ? 'visibility' : 'visibility_off' }}
                 </span>
