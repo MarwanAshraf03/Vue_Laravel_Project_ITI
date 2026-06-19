@@ -9,6 +9,7 @@ import JobDetailsView from '@/views/JobDetailsView.vue'
 import HomeView from '@/views/HomeView.vue'
 import Cookies from 'js-cookie'
 import { getCurrentUser } from '@/services/userService'
+import EmployerHomeView from '@/views/EmployerHomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -72,6 +73,12 @@ const router = createRouter({
       meta: { auth: false },
     },
     {
+      path: '/employer/home',
+      name: 'employer_home',
+      component: EmployerHomeView,
+      meta: { auth: true, role: 'employer' },
+    },
+    {
       path: '/about',
       name: 'about',
       // route level code-splitting
@@ -102,9 +109,24 @@ router.beforeEach(async (to) => {
     }
 
     if (to.meta.role && activeUser.role !== to.meta.role) {
-      return activeUser.role === 'candidate' ? { name: 'candidate_home' } : { name: 'home' }
+      console.log('line 112')
+      // return activeUser.role === 'candidate' ?  : { name: 'home' }
+      switch (to.meta.role) {
+        case 'candidate':
+          return { name: 'candidate_home' }
+        case 'employer':
+          console.log('line 118')
+          return { name: 'employer_home' }
+
+        default:
+          break
+      }
     }
+    if (to.path === '/' && activeUser.role === "employer")
+      return { name: 'employer_home' }
   }
+  console.log({ to })
+  console.log('line 126')
 
   return
 })

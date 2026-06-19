@@ -23,6 +23,8 @@ export async function callApi(url, method, data, token = null) {
       }
     }
   } catch (error) {
+    // console.log('error happened')
+    console.log({ message: error.message || 'Something went wrong', ok: false })
     return { message: error.message || 'Something went wrong', ok: false }
   }
 }
