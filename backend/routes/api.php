@@ -34,3 +34,30 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('employer/applications/{application}/reject', [ApplicationController::class, 'reject']);
     Route::post('employer/applications/{application}/pay', [ApplicationController::class, 'pay']);
 });
+
+// ---- Admin routes ----
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+    // Dashboard
+    Route::get('dashboard/stats', [App\Http\Controllers\Admin\DashboardController::class, 'stats']);
+
+    // Jobs moderation
+    Route::get('jobs', [App\Http\Controllers\Admin\JobController::class, 'index']);
+    Route::get('jobs/{jobListing}', [App\Http\Controllers\Admin\JobController::class, 'show']);
+    Route::patch('jobs/{jobListing}/approve', [App\Http\Controllers\Admin\JobController::class, 'approve']);
+    Route::patch('jobs/{jobListing}/reject', [App\Http\Controllers\Admin\JobController::class, 'reject']);
+    Route::patch('jobs/{jobListing}/reset-review', [App\Http\Controllers\Admin\JobController::class, 'resetReview']);
+    Route::delete('jobs/{jobListing}', [App\Http\Controllers\Admin\JobController::class, 'destroy']);
+
+    // Users management
+    Route::get('users', [App\Http\Controllers\Admin\UserController::class, 'index']);
+    Route::get('users/{user}', [App\Http\Controllers\Admin\UserController::class, 'show']);
+    Route::patch('users/{user}/ban', [App\Http\Controllers\Admin\UserController::class, 'ban']);
+    Route::patch('users/{user}/unban', [App\Http\Controllers\Admin\UserController::class, 'unban']);
+    Route::delete('users/{user}', [App\Http\Controllers\Admin\UserController::class, 'destroy']);
+
+    // Comments moderation
+    Route::get('comments', [App\Http\Controllers\Admin\CommentController::class, 'index']);
+    Route::patch('comments/{comment}/hide', [App\Http\Controllers\Admin\CommentController::class, 'hide']);
+    Route::patch('comments/{comment}/unhide', [App\Http\Controllers\Admin\CommentController::class, 'unhide']);
+    Route::delete('comments/{comment}', [App\Http\Controllers\Admin\CommentController::class, 'destroy']);
+});
