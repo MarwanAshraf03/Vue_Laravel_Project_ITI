@@ -67,6 +67,7 @@ function openApplyModal(job) {
       </div>
 
       <div class="nav-actions">
+        <RouterLink class="nav-link" :to="{ name: 'candidate_applications' }">My Applications</RouterLink>
         <RouterLink class="nav-link" :to="{ name: 'candidate_profile' }">Profile</RouterLink>
         <button class="logout-btn" type="button" @click="logout">Logout</button>
       </div>

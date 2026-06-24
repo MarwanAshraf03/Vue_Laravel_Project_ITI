@@ -64,6 +64,19 @@ class ApplicationController extends Controller
         return response()->json(['message' => 'Application submitted successfully', 'application' => $application], 201);
     }
 
+    public function candidateApplications(Request $request)
+    {
+        abort_unless($request->user()?->role === 'candidate', 403, 'Unauthorized action');
+
+        return response()->json(
+            Application::query()
+                ->where('user_id', $request->user()->id)
+                ->with(['jobListing'])
+                ->latest()
+                ->get()
+        );
+    }
+
     public function employerApplications(Request $request)
     {
         $this->ensureEmployer($request);

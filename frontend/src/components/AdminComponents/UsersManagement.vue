@@ -2,6 +2,8 @@
 import { banUser, deleteAdminUser, fetchAdminUsers, unbanUser } from '@/services/adminService'
 import { onMounted, ref } from 'vue'
 
+const emit = defineEmits(['toggle-sidebar'])
+
 const users = ref([])
 const loading = ref(true)
 const message = ref('')
@@ -100,8 +102,8 @@ async function handleDelete(userId) {
     <main class="main-content flex-grow-1">
       <header class="top-navbar d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-4">
-          <div class="d-md-none d-flex align-items-center">
-            <i class="fa-solid fa-bars fs-4 text-dark me-3" style="cursor: pointer"></i>
+          <div class="d-md-none d-flex align-items-center" @click="emit('toggle-sidebar')" style="cursor: pointer">
+            <i class="fa-solid fa-bars fs-4 text-dark me-3"></i>
           </div>
           <span class="fs-4 fw-bold text-dark mb-0">User Management</span>
         </div>
