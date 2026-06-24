@@ -4,6 +4,7 @@ import StatCard from './StatCard.vue'
 import { ref } from 'vue'
 
 const tab = defineModel('tab')
+const emit = defineEmits(['toggle-sidebar'])
 
 const response = await fetchDashboardStats()
 const stats = ref(response.ok ? response.data : null)
@@ -36,8 +37,8 @@ function statusBadgeClass(status) {
     <main class="main-content flex-grow-1">
       <header class="top-navbar d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-4">
-          <div class="d-md-none d-flex align-items-center">
-            <i class="fa-solid fa-bars fs-4 text-dark me-3" style="cursor: pointer"></i>
+          <div class="d-md-none d-flex align-items-center" @click="emit('toggle-sidebar')" style="cursor: pointer">
+            <i class="fa-solid fa-bars fs-4 text-dark me-3"></i>
           </div>
           <span class="fs-4 fw-bold text-dark mb-0">Admin Dashboard</span>
         </div>

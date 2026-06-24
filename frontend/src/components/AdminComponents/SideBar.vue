@@ -4,24 +4,35 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 function logout() {
+  isMobileOpen.value = false
   Cookies.remove('token')
   router.push({ name: 'user_login' })
 }
 
 const tab = defineModel('tab')
+const isMobileOpen = defineModel('isMobileOpen', { default: false })
 </script>
 
 <template>
-  <aside class="sidebar d-flex flex-column p-3 gap-1">
+  <aside class="sidebar d-flex flex-column p-3 gap-1" :class="{ 'sidebar-mobile-open': isMobileOpen }">
     <div class="mb-4 px-2">
-      <div class="d-flex align-items-center gap-2 mb-2">
-        <div
-          class="bg-dark text-white rounded d-flex align-items-center justify-content-center"
-          style="width: 32px; height: 32px"
-        >
-          <i class="fa-solid fa-rocket fs-6"></i>
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <div class="d-flex align-items-center gap-2">
+          <div
+            class="bg-dark text-white rounded d-flex align-items-center justify-content-center"
+            style="width: 32px; height: 32px"
+          >
+            <i class="fa-solid fa-rocket fs-6"></i>
+          </div>
+          <span class="fw-bold fs-5 text-dark">CareerMomentum</span>
         </div>
-        <span class="fw-bold fs-5 text-dark">CareerMomentum</span>
+        <button
+          class="btn d-md-none border-0 text-muted p-1"
+          @click="isMobileOpen = false"
+          aria-label="Close menu"
+        >
+          <i class="fa-solid fa-xmark fs-5"></i>
+        </button>
       </div>
       <div class="d-flex flex-column mt-3">
         <span class="text-success fw-bold small" style="color: #006a61 !important">Admin Console</span>
@@ -34,7 +45,7 @@ const tab = defineModel('tab')
         class="nav-link-custom"
         :class="{ active: tab === 'dashboard' }"
         href="#"
-        v-on:click.prevent="tab = 'dashboard'"
+        v-on:click.prevent="tab = 'dashboard'; isMobileOpen = false"
       >
         <i class="fa-solid fa-chart-pie"></i>
         <span>Dashboard</span>
@@ -43,7 +54,7 @@ const tab = defineModel('tab')
         class="nav-link-custom"
         :class="{ active: tab === 'jobs' }"
         href="#"
-        v-on:click.prevent="tab = 'jobs'"
+        v-on:click.prevent="tab = 'jobs'; isMobileOpen = false"
       >
         <i class="fa-solid fa-briefcase"></i>
         <span>Jobs</span>
@@ -52,7 +63,7 @@ const tab = defineModel('tab')
         class="nav-link-custom"
         :class="{ active: tab === 'users' }"
         href="#"
-        v-on:click.prevent="tab = 'users'"
+        v-on:click.prevent="tab = 'users'; isMobileOpen = false"
       >
         <i class="fa-solid fa-users"></i>
         <span>Users</span>
@@ -61,7 +72,7 @@ const tab = defineModel('tab')
         class="nav-link-custom"
         :class="{ active: tab === 'comments' }"
         href="#"
-        v-on:click.prevent="tab = 'comments'"
+        v-on:click.prevent="tab = 'comments'; isMobileOpen = false"
       >
         <i class="fa-solid fa-comments"></i>
         <span>Comments</span>
@@ -125,7 +136,16 @@ body {
 
 @media (max-width: 767.98px) {
   .sidebar {
-    display: none !important;
+    position: fixed;
+    top: 0;
+    left: -260px;
+    height: 100vh;
+    transition: left 0.3s ease;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+  }
+  .sidebar.sidebar-mobile-open {
+    left: 0;
+    display: flex !important;
   }
 }
 </style>

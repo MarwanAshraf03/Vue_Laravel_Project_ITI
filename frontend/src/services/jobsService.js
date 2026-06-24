@@ -37,6 +37,15 @@ export async function fetchEmployerApplications() {
   return result
 }
 
+export async function fetchCandidateApplications() {
+  const token = Cookies.get('token')
+  const result = await callApi('/candidate/applications', 'GET', null, token)
+  if (result.ok && !Array.isArray(result.data)) {
+    return { ...result, data: [] }
+  }
+  return result
+}
+
 export async function createJob(jobData) {
   const result = await callApi('/jobs', 'POST', jobData)
   return result

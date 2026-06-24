@@ -10,6 +10,7 @@ import HomeView from '@/views/HomeView.vue'
 import Cookies from 'js-cookie'
 import { getCurrentUser } from '@/services/userService'
 import EmployerHomeView from '@/views/EmployerHomeView.vue'
+import CandidateApplicationsView from '@/views/CandidateApplicationsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,6 +38,12 @@ const router = createRouter({
       path: '/candidate/profile',
       name: 'candidate_profile',
       component: CandidateProfileView,
+      meta: { auth: true, role: 'candidate' },
+    },
+    {
+      path: '/candidate/applications',
+      name: 'candidate_applications',
+      component: CandidateApplicationsView,
       meta: { auth: true, role: 'candidate' },
     },
     {
