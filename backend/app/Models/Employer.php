@@ -28,6 +28,6 @@ class Employer extends Model
 
     public function jobListings(): HasMany
     {
-        return $this->hasMany(JobListing::class);
+        return $this->hasMany(JobListing::class, 'employer_id', 'user_id');
     }
 }

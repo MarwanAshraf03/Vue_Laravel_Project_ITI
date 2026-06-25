@@ -31,12 +31,16 @@ body {
   font-family: 'Inter', sans-serif;
   background: #f8f9ff;
   color: #0b1c30;
+    height: 100%;
+
 }
 
 /* Remove default scrollbar only when not needed */
 #app {
   display: flex;
   flex-direction: column;
+    height: 100%;
+
 }
 </style>
 

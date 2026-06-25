@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('resume_path')->nullable();
             $table->text('message')->nullable();
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->foreignId('reviewed_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('reviewed_at')->nullable();
             $table->unique(['job_listing_id', 'user_id']);
             $table->timestamps();
         });

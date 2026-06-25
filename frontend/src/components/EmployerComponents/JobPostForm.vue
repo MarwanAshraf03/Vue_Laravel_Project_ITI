@@ -219,7 +219,7 @@ const formatToDMY = (dateValue) => {
                     >Min Salary</label
                   >
                   <input
-                    v-model="job.salary_min"
+                   v-model.number="job.salary_min"
                     class="form-control"
                     id="salary_min"
                     name="salary_min"
@@ -233,7 +233,7 @@ const formatToDMY = (dateValue) => {
                     >Max Salary</label
                   >
                   <input
-                    v-model="job.salary_max"
+                    v-model.number="job.salary_max"
                     class="form-control"
                     id="salary_max"
                     name="salary_max"
@@ -338,11 +338,7 @@ body {
   font-weight: 600;
 }
 
-/* Main Content Wrapper */
-.main-content {
-  margin-left: 260px;
-  min-height: 100vh;
-}
+
 
 /* Top Navbar */
 .top-navbar {
