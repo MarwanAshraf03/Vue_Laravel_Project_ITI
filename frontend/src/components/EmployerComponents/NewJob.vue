@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import JobPostForm from './JobPostForm.vue'
-import { newJobListing } from '@/services/jobsService'
+import { newJobListing } from '@/services/jobsService.js'
 
 const tab = defineModel('tab')
 const job = ref({
@@ -28,22 +28,10 @@ const formatToDMY = (dateValue) => {
 }
 
 const handleSubmit = async function () {
-  // Build a payload with the deadline in the format Laravel expects (d-m-Y)
-  // without mutating the reactive ref so re-submissions still work.
-  const payload = {
-    ...job.value,
-    deadline: formatToDMY(job.value.deadline),
-  }
-  console.log('[NewJob] Sending payload:', JSON.stringify(payload))
-  const response = await newJobListing(payload)
-  console.log('[NewJob] Response:', response)
-
-  if (!response.ok) {
-    console.error('[NewJob] Validation errors:', response.errors)
-    alert('Submission failed:\n' + JSON.stringify(response.errors, null, 2))
-    return
-  }
-
+  job.value.deadline = formatToDMY(job.value.deadline)
+  //   console.log({ job: job.value })
+  const response = await newJobListing(job.value)
+  //   console.log(response.data)
   tab.value = 'dashboard'
 }
 </script>
