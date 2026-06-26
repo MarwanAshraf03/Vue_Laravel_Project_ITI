@@ -51,16 +51,34 @@ export async function createJob(jobData) {
   return result
 }
 
+function makeJobFormData(jobData, isUpdate = false) {
+  const formData = new FormData()
+  if (isUpdate) {
+    formData.append('_method', 'PATCH')
+  }
+  Object.entries(jobData).forEach(([key, value]) => {
+    if (value !== null && value !== undefined) {
+      if (key === 'company_logo' && !(value instanceof File)) {
+        // Skip string path
+        return
+      }
+      formData.append(key, value)
+    }
+  })
+  return formData
+}
+
 export async function newJobListing(jobData) {
   const token = Cookies.get('token')
-
-  const result = await callApi('/jobs/create', 'POST', jobData, token)
+  const formData = makeJobFormData(jobData)
+  const result = await callApi('/jobs/create', 'POST', formData, token)
   return result
 }
 
 export async function updateJobListing(jobData) {
   const token = Cookies.get('token')
-  const result = await callApi(`/jobs/update/${jobData.id}`, 'PATCH', jobData, token)
+  const formData = makeJobFormData(jobData, true)
+  const result = await callApi(`/jobs/update/${jobData.id}`, 'POST', formData, token)
   return result
 }
 

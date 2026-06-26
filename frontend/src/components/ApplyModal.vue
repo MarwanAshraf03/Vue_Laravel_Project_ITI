@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { applyToJob } from '@/services/jobsService'
 import { getCurrentUser } from '@/services/userService'
 
@@ -25,6 +25,23 @@ async function initForm() {
     applicationForm.value.email = user.email
   }
 }
+
+onMounted(() => {
+  initForm()
+})
+
+// Reset feedback & re-populate when modal opens
+watch(
+  () => props.isOpen,
+  (open) => {
+    if (open) {
+      error.value = null
+      success.value = null
+      loading.value = false
+      initForm()
+    }
+  },
+)
 
 async function handleApply() {
   loading.value = true

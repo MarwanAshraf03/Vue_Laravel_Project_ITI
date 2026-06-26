@@ -3,7 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ApplicationController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CommentController;
 
 Route::post('candidate/signup', [ProfileController::class, 'candidateSignUp']);
 Route::post('admin/signup', [ProfileController::class, 'adminSignUp']);
@@ -18,6 +18,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::get('jobs', [JobController::class, 'index']);
 Route::get('jobs/{jobListing}', [JobController::class, 'show']);
+Route::get('jobs/{jobListing}/comments', [CommentController::class, 'index']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('jobs/{jobListing}/comments', [CommentController::class, 'store']);
+    Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('applications', [ApplicationController::class, 'index']);

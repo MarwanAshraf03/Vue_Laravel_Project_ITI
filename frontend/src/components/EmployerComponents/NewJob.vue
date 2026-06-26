@@ -9,11 +9,16 @@ const job = ref({
   description: '',
   category: '',
   industry: '',
-  location: 'remote',
+  location: '',
+  work_type: 'remote',
   deadline: '',
   salary_min: 0,
   salary_max: 1,
   experience_level: '',
+  technologies: '',
+  requirements: '',
+  benefits: '',
+  company_logo: null,
 })
 
 const formatToDMY = (dateValue) => {
@@ -29,10 +34,12 @@ const formatToDMY = (dateValue) => {
 
 const handleSubmit = async function () {
   job.value.deadline = formatToDMY(job.value.deadline)
-  //   console.log({ job: job.value })
   const response = await newJobListing(job.value)
-  //   console.log(response.data)
-  tab.value = 'dashboard'
+  if (response.ok) {
+    tab.value = 'dashboard'
+  } else {
+    alert(response.message || 'Failed to create job listing.')
+  }
 }
 </script>
 <template>

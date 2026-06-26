@@ -1,41 +1,42 @@
 <script setup>
-// #[Fillable(['title', 'description', 'category', 'industry', 'location', 'deadline', 'salary_min', 'salary_max', 'experience_level'])]
-import { newJobListing } from '@/services/jobsService'
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 
 const props = defineProps(['action', 'handleSubmit'])
 const job = defineModel('job')
 
-// const job = ref({
-//   title: '',
-//   description: '',
-//   category: '',
-//   industry: '',
-//   location: 'remote',
-//   deadline: '',
-//   salary_min: 0,
-//   salary_max: 1,
-//   experience_level: '',
-// })
+const logoPreview = ref('')
+const fileInput = ref(null)
 
-const formatToDMY = (dateValue) => {
-  if (!dateValue) return ''
-
-  const date = new Date(dateValue)
-
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0') // Months are 0-indexed
-  const year = date.getFullYear()
-
-  return `${day}-${month}-${year}`
+function resolveLogoUrl(path) {
+  if (!path) return ''
+  if (typeof path !== 'string') return ''
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) {
+    return path
+  }
+  return `/storage/${path}`
 }
 
-// const handleSubmit = async function () {
-//   job.value.deadline = formatToDMY(job.value.deadline)
-//   console.log({ job: job.value })
-//   const response = await newJobListing(job.value)
-//   console.log(response.data)
-// }
+onMounted(() => {
+  if (job.value?.company_logo && typeof job.value.company_logo === 'string') {
+    logoPreview.value = resolveLogoUrl(job.value.company_logo)
+  }
+})
+
+watch(() => job.value?.company_logo, (newVal) => {
+  if (newVal && typeof newVal === 'string') {
+    logoPreview.value = resolveLogoUrl(newVal)
+  } else if (!newVal) {
+    logoPreview.value = ''
+  }
+})
+
+function onLogoChange(e) {
+  const file = e.target.files[0]
+  if (file) {
+    job.value.company_logo = file
+    logoPreview.value = URL.createObjectURL(file)
+  }
+}
 </script>
 
 <template>
@@ -121,8 +122,7 @@ const formatToDMY = (dateValue) => {
                   <label class="form-label d-block small fw-semibold text-muted">Work Type</label>
                   <div class="segmented-control">
                     <input
-                      v-model="job.location"
-                      checked=""
+                      v-model="job.work_type"
                       id="remote"
                       name="work-type"
                       type="radio"
@@ -131,7 +131,7 @@ const formatToDMY = (dateValue) => {
                     <label for="remote">Remote</label>
 
                     <input
-                      v-model="job.location"
+                      v-model="job.work_type"
                       id="onsite"
                       name="work-type"
                       type="radio"
@@ -140,7 +140,7 @@ const formatToDMY = (dateValue) => {
                     <label for="onsite">Onsite</label>
 
                     <input
-                      v-model="job.location"
+                      v-model="job.work_type"
                       id="hybrid"
                       name="work-type"
                       type="radio"
@@ -148,6 +148,36 @@ const formatToDMY = (dateValue) => {
                     />
                     <label for="hybrid">Hybrid</label>
                   </div>
+                </div>
+              </div>
+
+              <div class="row g-4 mb-4">
+                <div class="col-12 col-md-6">
+                  <label class="form-label small fw-semibold text-muted" for="job-location"
+                    >Physical Location</label
+                  >
+                  <input
+                    v-model="job.location"
+                    class="form-control"
+                    id="job-location"
+                    name="job-location"
+                    placeholder="e.g. Cairo"
+                    type="text"
+                    required
+                  />
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="form-label small fw-semibold text-muted" for="job-technologies"
+                    >Technologies / Tech Stack</label
+                  >
+                  <input
+                    v-model="job.technologies"
+                    class="form-control"
+                    id="job-technologies"
+                    name="job-technologies"
+                    placeholder="e.g. Vue.js, Laravel, TailwindCSS"
+                    type="text"
+                  />
                 </div>
               </div>
 
@@ -180,6 +210,34 @@ const formatToDMY = (dateValue) => {
                     style="resize: none; box-shadow: none"
                   ></textarea>
                 </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label small fw-semibold text-muted" for="requirements"
+                  >Requirements & Qualifications</label
+                >
+                <textarea
+                  v-model="job.requirements"
+                  class="form-control border rounded-3"
+                  id="requirements"
+                  name="requirements"
+                  placeholder="List the required skills, qualifications, education, and experience..."
+                  rows="4"
+                ></textarea>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label small fw-semibold text-muted" for="benefits"
+                  >Benefits & Perks Offered</label
+                >
+                <textarea
+                  v-model="job.benefits"
+                  class="form-control border rounded-3"
+                  id="benefits"
+                  name="benefits"
+                  placeholder="e.g. Health insurance, flexible hours, remote allowance, equity..."
+                  rows="4"
+                ></textarea>
               </div>
 
               <div class="row g-4 mb-4">
@@ -240,6 +298,24 @@ const formatToDMY = (dateValue) => {
                     placeholder="10,000$"
                     type="number"
                     required
+                  />
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label small fw-semibold text-muted">Company Logo / Branding (Optional)</label>
+                <div class="d-flex align-items-center gap-3">
+                  <div v-if="logoPreview" class="border rounded-3 overflow-hidden d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: #f0f2f5;">
+                    <img :src="logoPreview" alt="Logo preview" class="w-100 h-100 object-fit-contain" />
+                  </div>
+                  <div v-else class="border rounded-3 d-flex align-items-center justify-content-center text-muted" style="width: 80px; height: 80px; background: #f0f2f5; font-size: 2rem;">
+                    <i class="fa-solid fa-image"></i>
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    class="form-control"
+                    @change="onLogoChange"
                   />
                 </div>
               </div>
