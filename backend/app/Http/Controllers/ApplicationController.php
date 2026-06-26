@@ -8,6 +8,9 @@ use App\Models\JobListing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
+
+
 
 class ApplicationController extends Controller
 {
@@ -34,7 +37,7 @@ class ApplicationController extends Controller
     {
         $user = $request->user();
 
-        if ($jobListing->status !== 'published') {
+        if (!$jobListing->isPubliclyVisible()) {
             return response()->json(['message' => 'This job is not available for applications'], 404);
         }
 
@@ -87,7 +90,7 @@ class ApplicationController extends Controller
     {
         $user = $request->user();
 
-        if ($user->role !== 'admin') {
+        if ($user->role !== 'admin' && ($user->role !== 'candidate' || $application->user_id !== $user->id)) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -114,7 +117,7 @@ class ApplicationController extends Controller
 
         return response()->json(
             Application::query()
-                ->whereHas('jobListing', fn ($query) => $query->where('employer_id', $request->user()->id))
+                ->whereHas('jobListing', fn($query) => $query->where('employer_id', $request->user()->id))
                 ->with(['jobListing', 'user', 'paymentTransaction', 'reviewer'])
                 ->latest()
                 ->get()
@@ -145,6 +148,7 @@ class ApplicationController extends Controller
 
     public function approve(Request $request, Application $application)
     {
+        Log::info("rejecting");
         $request->merge(['status' => 'approved']);
         return $this->review($request, $application);
     }

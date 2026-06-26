@@ -3,13 +3,14 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Cookies from 'js-cookie'
 import { getCurrentUser } from '@/services/userService'
-import { getUserApplications } from '@/services/applicationService'
+import { getUserApplications, deleteApplication } from '@/services/applicationService'
 
 const router = useRouter()
 const currentUser = ref(null)
 const applications = ref([])
 const loading = ref(false)
 const error = ref('')
+const cancellingId = ref(null)
 
 onMounted(async () => {
   currentUser.value = await getCurrentUser()
@@ -31,6 +32,30 @@ async function loadApplications() {
   } else {
     error.value = result.message || 'Failed to load applications'
   }
+}
+
+async function cancelApplication(applicationId) {
+  if (!confirm('Are you sure you want to cancel this application?')) return
+  cancellingId.value = applicationId
+  const result = await deleteApplication(applicationId)
+  cancellingId.value = null
+  if (result.ok) {
+    applications.value = applications.value.filter((a) => a.id !== applicationId)
+  } else {
+    alert(result.message || 'Failed to cancel application.')
+  }
+}
+
+function statusClass(status) {
+  if (status === 'accepted') return 'status-accepted'
+  if (status === 'rejected') return 'status-rejected'
+  return 'status-pending'
+}
+
+function statusLabel(status) {
+  if (status === 'accepted') return 'Accepted'
+  if (status === 'rejected') return 'Rejected'
+  return 'Pending'
 }
 
 function logout() {
@@ -68,7 +93,9 @@ function logout() {
           <div v-for="application in applications" :key="application.id" class="application-card">
             <div class="card-header">
               <h3>{{ application.job_listing?.title || 'Unknown Job' }}</h3>
-              <span class="status-badge">Applied</span>
+              <span class="status-badge" :class="statusClass(application.status)">
+                {{ statusLabel(application.status) }}
+              </span>
             </div>
             <div class="card-body">
               <div class="application-detail">
@@ -78,6 +105,10 @@ function logout() {
               <div class="application-detail">
                 <span class="label">Location:</span>
                 <span class="value">{{ application.job_listing?.location || 'N/A' }}</span>
+              </div>
+              <div v-if="application.job_listing?.work_type" class="application-detail">
+                <span class="label">Work Type:</span>
+                <span class="value">{{ application.job_listing.work_type }}</span>
               </div>
               <div class="application-detail">
                 <span class="label">Applied on:</span>
@@ -91,6 +122,15 @@ function logout() {
                 <span class="label">Resume:</span>
                 <a :href="`/storage/${application.resume_path}`" target="_blank" class="resume-link">View Resume</a>
               </div>
+            </div>
+            <div class="card-footer">
+              <button
+                class="cancel-btn"
+                :disabled="cancellingId === application.id || application.status === 'accepted'"
+                @click="cancelApplication(application.id)"
+              >
+                {{ cancellingId === application.id ? 'Cancelling...' : 'Cancel Application' }}
+              </button>
             </div>
           </div>
         </div>
@@ -236,13 +276,26 @@ function logout() {
 }
 
 .status-badge {
-  background: #006a61;
-  color: #fff;
   padding: 0.25rem 0.75rem;
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+.status-pending {
+  background: #006a61;
+  color: #fff;
+}
+
+.status-accepted {
+  background: #15803d;
+  color: #fff;
+}
+
+.status-rejected {
+  background: #dc2626;
+  color: #fff;
 }
 
 .card-body {
@@ -277,6 +330,35 @@ function logout() {
 
 .resume-link:hover {
   text-decoration: underline;
+}
+
+.card-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(11, 28, 48, 0.08);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cancel-btn {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  padding: 0.55rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background: #fecaca;
+}
+
+.cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 900px) {

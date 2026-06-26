@@ -11,7 +11,7 @@ import HomeView from '@/views/HomeView.vue'
 import Cookies from 'js-cookie'
 import { getCurrentUser } from '@/services/userService'
 import EmployerHomeView from '@/views/EmployerHomeView.vue'
-import CandidateApplicationsView from '@/views/CandidateApplicationsView.vue'
+// import CandidateApplicationsView from '@/views/CandidateApplicationsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -30,10 +30,10 @@ const router = createRouter({
       alias: ['/candidate', '/candidate/'],
     },
     {
-      path: '/candidate/jobs/:id',
+      path: '/jobs/:id',
       name: 'job_details',
       component: JobDetailsView,
-      meta: { auth: true, role: 'candidate' },
+      meta: { auth: true },
     },
     {
       path: '/candidate/profile',
@@ -130,8 +130,7 @@ router.beforeEach(async (to) => {
           break
       }
     }
-    if (to.path === '/' && activeUser.role === "employer")
-      return { name: 'employer_home' }
+    if (to.path === '/' && activeUser.role === 'employer') return { name: 'employer_home' }
   }
   console.log({ to })
   console.log('line 126')

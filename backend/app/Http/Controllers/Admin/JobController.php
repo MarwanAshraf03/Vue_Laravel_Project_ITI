@@ -7,6 +7,7 @@ use App\Models\JobListing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class JobController extends Controller
 {
@@ -46,12 +47,14 @@ class JobController extends Controller
     {
         Gate::authorize('moderate', $jobListing);
 
-        $jobListing->update([
+        $result = $jobListing->update([
             'moderation_status' => 'approved',
             'rejection_reason' => null,
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
         ]);
+        Log::info($jobListing);
+
 
         return response()->json([
             'message' => 'Job listing approved successfully',

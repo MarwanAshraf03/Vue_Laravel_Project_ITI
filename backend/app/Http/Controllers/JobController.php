@@ -12,7 +12,9 @@ class JobController extends Controller
 {
     public function index(Request $request)
     {
-        $query = JobListing::query()->where('status', 'published');
+        $query = JobListing::query()
+            ->where('status', 'published')
+            ->where('moderation_status', 'approved');
 
         if ($request->category) {
             $query->where('category', $request->category);
@@ -54,12 +56,14 @@ class JobController extends Controller
     public function show(Request $request, JobListing $jobListing)
     {
         $user = $request->user();
+        $isOwner = $user && $user->id === $jobListing->employer_id;
+        $isAdmin = $user && $user->role === 'admin';
 
-        if ($jobListing->status !== 'published' && (! $user || $user->id !== $jobListing->employer_id)) {
+        if (!$isOwner && !$isAdmin && !$jobListing->isPubliclyVisible()) {
             return response()->json(['message' => 'Job not found'], 404);
         }
 
-        return response()->json($jobListing);
+        return response()->json($jobListing->load(['employer.profile']));
     }
 
     public function employerIndex(Request $request)
@@ -96,6 +100,11 @@ class JobController extends Controller
             'experience_level' => 'required|string|max:255',
             'company' => 'nullable|string|max:255',
             'status' => ['nullable', Rule::in(['draft', 'published', 'archived'])],
+            'work_type' => ['required', Rule::in(['remote', 'onsite', 'hybrid'])],
+            'technologies' => 'nullable|string',
+            'requirements' => 'nullable|string',
+            'benefits' => 'nullable|string',
+            'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         // 2. Return validation errors if it fails
@@ -108,10 +117,15 @@ class JobController extends Controller
 
         $data = $validator->validated();
 
-    // 3. Inject the owner and default publication state directly from the authenticated user token
+        // Handle company logo file upload
+        if ($request->hasFile('company_logo')) {
+            $data['company_logo'] = $request->file('company_logo')->store('company_logos', 'public');
+        }
+
+        // 3. Inject the owner and default publication state directly from the authenticated user token
         $data['employer_id'] = $request->user()->id;
-    $data['company'] = $data['company'] ?? $request->user()->name;
-    $data['status'] = $data['status'] ?? 'published';
+        $data['company'] = $data['company'] ?? $request->user()->name;
+        $data['status'] = $data['status'] ?? 'published';
 
         // 3. Create and save the new job listing
         $job = JobListing::create($data);
@@ -149,7 +163,20 @@ class JobController extends Controller
             'location' => 'sometimes|string',
             'company' => 'sometimes|string|max:255',
             'status' => ['sometimes', Rule::in(['draft', 'published', 'archived'])],
+            'work_type' => ['sometimes', Rule::in(['remote', 'onsite', 'hybrid'])],
+            'technologies' => 'nullable|string',
+            'requirements' => 'nullable|string',
+            'benefits' => 'nullable|string',
+            'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+
+        // Handle company logo file upload
+        if ($request->hasFile('company_logo')) {
+            if ($jobListing->company_logo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($jobListing->company_logo);
+            }
+            $validated['company_logo'] = $request->file('company_logo')->store('company_logos', 'public');
+        }
 
         $jobListing->update($validated);
 
