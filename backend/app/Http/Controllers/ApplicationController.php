@@ -9,6 +9,25 @@ use Illuminate\Support\Facades\Validator;
 
 class ApplicationController extends Controller
 {
+    public function index(Request $request)
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $applications = Application::with(['user', 'jobListing'])->get();
+        return response()->json(['applications' => $applications], 200);
+    }
+
+    public function userApplications(Request $request)
+    {
+        $user = $request->user();
+        $applications = Application::with(['jobListing'])->where('user_id', $user->id)->get();
+        return response()->json(['applications' => $applications], 200);
+    }
+
     public function store(Request $request, JobListing $jobListing)
     {
         $user = $request->user();
@@ -56,5 +75,17 @@ class ApplicationController extends Controller
         $application = Application::create($applicationData);
 
         return response()->json(['message' => 'Application submitted successfully', 'application' => $application], 201);
+    }
+
+    public function destroy(Request $request, Application $application)
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $application->delete();
+        return response()->json(['message' => 'Application deleted successfully'], 200);
     }
 }

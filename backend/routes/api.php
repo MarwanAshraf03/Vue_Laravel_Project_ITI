@@ -20,5 +20,8 @@ Route::get('jobs', [JobController::class, 'index']);
 Route::get('jobs/{jobListing}', [JobController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('applications', [ApplicationController::class, 'index']);
+    Route::get('user/applications', [ApplicationController::class, 'userApplications']);
     Route::post('jobs/{jobListing}/apply', [ApplicationController::class, 'store']);
+    Route::delete('applications/{application}', [ApplicationController::class, 'destroy']);
 });
