@@ -11,8 +11,18 @@ export async function callApi(url, method, data, token = null) {
       },
       body: data ? (isFormData ? data : JSON.stringify(data)) : null,
     })
-    const responseData = await response.json()
-    console.log(responseData)
+
+    const rawResponse = await response.text()
+    let responseData = null
+
+    if (rawResponse) {
+      try {
+        responseData = JSON.parse(rawResponse)
+      } catch {
+        responseData = { message: rawResponse }
+      }
+    }
+
     if (response.ok) {
       return { data: responseData, ok: true }
     } else {
@@ -23,6 +33,7 @@ export async function callApi(url, method, data, token = null) {
       }
     }
   } catch (error) {
+    console.log({ message: error.message || 'Something went wrong', ok: false })
     return { message: error.message || 'Something went wrong', ok: false }
   }
 }

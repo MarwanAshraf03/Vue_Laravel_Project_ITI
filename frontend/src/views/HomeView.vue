@@ -19,7 +19,8 @@ function logout() {
 </script>
 
 <template>
-  <main class="admin-shell">
+  <AdminHomeView v-if="currentUser && currentUser.role === 'admin'" />
+  <main v-else class="admin-shell">
     <section class="admin-card">
       <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
         <div>
@@ -44,8 +45,6 @@ function logout() {
           <strong>{{ currentUser.role }}</strong>
         </article>
       </div>
-
-      <AdminHomeView v-if="currentUser && currentUser.role === 'admin'" />
     </section>
   </main>
 </template>
